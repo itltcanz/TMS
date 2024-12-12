@@ -2,10 +2,10 @@ package org.itltcanz.tms.controller;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.itltcanz.tms.entity.Comment;
 import org.itltcanz.tms.entity.Task;
 import org.itltcanz.tms.service.TaskService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,31 +20,34 @@ public class TaskController {
 
     @GetMapping
     public ResponseEntity<List<Task>> getTasks() {
-        var tasks = taskService.findAll();
+        var tasks = taskService.getTasksByAccount();
         return ResponseEntity.ok(tasks);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Task> getTaskById(@PathVariable Integer id) {
-        var task = taskService.findById(id);
+    @GetMapping("/{taskId}")
+    public ResponseEntity<Task> getTaskById(@PathVariable Integer taskId) {
+        var task = taskService.getTaskById(taskId);
         return ResponseEntity.ok(task);
     }
 
     @PostMapping
+    @Secured("ROLE_ADMIN")
     public ResponseEntity<Task> createTask(@RequestBody @Valid Task task) {
         var savedTask = taskService.save(task);
         return ResponseEntity.ok(savedTask);
     }
 
-    @PostMapping("/{taskId}/comments")
-    public ResponseEntity<Task> addComment(@PathVariable Integer taskId, @RequestBody Comment comment) {
-        var task = taskService.addComment(taskId, comment);
+    @PutMapping("/{id}")
+    @Secured("ROLE_ADMIN")
+    public ResponseEntity<Task> updateTask(@PathVariable Integer id, @RequestBody @Valid Task updatedTask) {
+        var task = taskService.update(id, updatedTask);
         return ResponseEntity.ok(task);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Task> updateTask(@PathVariable Integer id, @RequestBody @Valid Task updatedTask) {
-        var task = taskService.update(id, updatedTask);
+    @PatchMapping("/{taskId}/executor")
+    @Secured("ROLE_ADMIN")
+    public ResponseEntity<Task> updateTaskExecutor(@PathVariable Integer taskId, @RequestBody Map<String, Integer> newExecutorId) {
+        var task = taskService.updateExecutor(taskId, newExecutorId.get("executor"));
         return ResponseEntity.ok(task);
     }
 
@@ -61,6 +64,7 @@ public class TaskController {
     }
 
     @DeleteMapping("/{id}")
+    @Secured("ROLE_ADMIN")
     public ResponseEntity<Void> deleteTask(@PathVariable Integer id) {
         taskService.delete(id);
         return ResponseEntity.noContent().build();

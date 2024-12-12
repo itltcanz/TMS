@@ -12,10 +12,10 @@ public class RoleService {
 
     private final RoleRepository roleRepository;
     public Role findUserRole() {
-        return roleRepository.findRoleByName("user").orElseThrow(() -> new EntityException("Role not found"));
+        return roleRepository.findRoleByName("ROLE_USER").orElseThrow(() -> new EntityException("Role not found"));
     }
 
     public Role findAdminRole() {
-        return roleRepository.findRoleByName("admin").orElseThrow(() -> new EntityException("Role not found"));
+        return roleRepository.findRoleByName("ROLE_ADMIN").orElseThrow(() -> new EntityException("Role not found"));
     }
 }

@@ -1,10 +1,12 @@
 package org.itltcanz.tms.service;
 
 import lombok.AllArgsConstructor;
+import org.itltcanz.tms.entity.Account;
 import org.itltcanz.tms.entity.Comment;
 import org.itltcanz.tms.entity.Task;
 import org.itltcanz.tms.exceptions.EntityException;
 import org.itltcanz.tms.repository.TaskRepository;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,6 +18,7 @@ public class TaskService {
     private final CommentService commentService;
     private final StatusService statusService;
     private final PriorityService priorityService;
+    private final AccountService accountService;
 
     public Task save(Task task) {
         task.getComments().forEach(commentService::save);
@@ -23,8 +26,24 @@ public class TaskService {
         return findById(task.getId());
     }
 
-    public List<Task> findAll() {
-        return taskRepository.findAll();
+    public List<Task> getTasksByAccount() {
+        var account = accountService.getCurrentUser();
+        List<Task> tasks;
+        if (accountService.isAdmin(account)) {
+            tasks = taskRepository.findAll();
+        } else {
+            tasks = taskRepository.findTasksByExecutor(account);
+        }
+        return tasks;
+    }
+
+    public Task getTaskById(Integer id) {
+        var account = accountService.getCurrentUser();
+        if (accountService.isAdmin(account)) {
+            return findById(id);
+        } else {
+            return findTaskByIdAndAccount(id, account);
+        }
     }
 
     public Task findById(Integer id) {
@@ -46,24 +65,63 @@ public class TaskService {
         task.getComments().forEach(commentService::delete);
     }
 
-    public Task updateStatus(Integer taskId, Integer statusId) {
+    public Task updateExecutor(Integer taskId, Integer executorId) {
         var task = findById(taskId);
-        var status = statusService.findById(statusId);
-        task.setStatus(status);
+        var executor = accountService.findById(executorId);
+        task.setExecutor(executor);
         return save(task);
+    }
+
+    public Task updateStatus(Integer taskId, Integer statusId) {
+        var account = accountService.getCurrentUser();
+        var task = findById(taskId);
+        if (accountService.isAdmin(account) || task.getExecutor().equals(account)) {
+            var status = statusService.findById(statusId);
+            task.setStatus(status);
+            return save(task);
+        } else {
+            throw new AccessDeniedException("You do not have permission to access this task");
+        }
     }
 
     public Task updatePriority(Integer taskId, Integer priorityId) {
+        var account = accountService.getCurrentUser();
         var task = findById(taskId);
-        var priority = priorityService.findById(priorityId);
-        task.setPriority(priority);
-        return save(task);
+        if (accountService.isAdmin(account) || task.getExecutor().equals(account)) {
+            var priority = priorityService.findById(priorityId);
+            task.setPriority(priority);
+            return save(task);
+        } else {
+            throw new AccessDeniedException("You do not have permission to access this task");
+        }
     }
 
-    public Task addComment(Integer taskId, Comment comment) {
+    public Task addComment(Integer taskId, String text) {
+        var account = accountService.getCurrentUser();
         var task = findById(taskId);
-        commentService.save(comment);
-        task.getComments().add(comment);
-        return save(task);
+        if (accountService.isAdmin(account) || task.getExecutor().equals(account)) {
+            var comment = new Comment(account, text);
+            commentService.save(comment);
+            task.getComments().add(comment);
+            return save(task);
+        } else {
+            throw new AccessDeniedException("You do not have permission to access this task");
+        }
+    }
+
+    public Task findTaskByIdAndAccount(Integer id, Account account) {
+        var task = taskRepository.findById(id).orElseThrow(() -> new EntityException("Task not found"));
+        if (!task.getExecutor().equals(account)) {
+            throw new AccessDeniedException("You do not have permission to access this task");
+        }
+        return task;
+    }
+
+    public void deleteComment(Integer taskId, Integer commentId) {
+        var task = findById(taskId);
+        var comment = commentService.findById(commentId);
+        task.getComments().remove(comment);
+        save(task);
+        commentService.delete(comment);
     }
 }

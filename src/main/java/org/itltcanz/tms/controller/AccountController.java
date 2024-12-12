@@ -4,13 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.itltcanz.tms.entity.Account;
 import org.itltcanz.tms.service.AccountService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AccountController {
     private final AccountService accountService;
@@ -24,5 +21,10 @@ public class AccountController {
     public ResponseEntity<String> login(@RequestBody Account account) {
         var jwtToken = accountService.verify(account);
         return ResponseEntity.ok(jwtToken);
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<Account> profile() {
+        return ResponseEntity.ok(accountService.getCurrentUser());
     }
 }

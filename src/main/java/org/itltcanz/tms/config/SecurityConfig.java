@@ -11,6 +11,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -24,6 +25,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@EnableMethodSecurity(securedEnabled = true)
 public class SecurityConfig {
     private final AccountDetailsService accountDetailsService;
     private final JwtFilter jwtFilter;
@@ -34,13 +36,13 @@ public class SecurityConfig {
         httpSecurity
             .csrf(AbstractHttpConfigurer::disable) // Отключение CSRF
             .authorizeHttpRequests(request -> request
-                .requestMatchers("/api/register", "/api/login").permitAll() // Разрешить доступ
-                .anyRequest().authenticated() // Все остальные запросы требуют аутентификации
+                .requestMatchers("/api/auth/register", "/api/auth/login").permitAll() // Разрешить доступ для всех
+                .anyRequest().authenticated() // Остальные запросы требуют аутентификации
             )
             .httpBasic(Customizer.withDefaults()) // Включение базовой HTTP-аутентификации
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Сессии статические (JWT)
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless сессии
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // Добавление JWT фильтра
-            .addFilterBefore(jwtExceptionFilter, JwtFilter.class); // Добавление фильтра для обработки исключений
+            .addFilterBefore(jwtExceptionFilter, JwtFilter.class); // Добавление фильтра обработки исключений
         return httpSecurity.build();
     }
 
@@ -62,7 +64,6 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder(10);
     }
 }
-
 
 
 
