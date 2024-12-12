@@ -1,18 +1,14 @@
 package org.itltcanz.tms.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
 @Entity
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Task {
@@ -20,7 +16,7 @@ public class Task {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotNull(message = "Title cannot be null")
+    @NotBlank(message = "Title cannot be empty")
     @Size(min = 1, max = 255, message = "Title must be between 1 and 255 characters")
     private String title;
 
@@ -28,19 +24,19 @@ public class Task {
     private String description;
 
     @ManyToOne
-    @NotNull(message = "Author cannot be null")
+    @NotBlank(message = "Author cannot be empty")
     private Account author;
 
     @ManyToOne
-    @NotNull(message = "Executor cannot be null")
+    @NotBlank(message = "Executor cannot be empty")
     private Account executor;
 
     @ManyToOne
-    @NotNull(message = "Status cannot be null")
+    @NotBlank(message = "Status cannot be empty")
     private Status status;
 
     @ManyToOne
-    @NotNull(message = "Priority cannot be null")
+    @NotBlank(message = "Priority cannot be empty")
     private Priority priority;
 
     @ManyToMany(fetch = FetchType.EAGER)
