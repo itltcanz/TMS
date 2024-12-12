@@ -6,10 +6,11 @@ import org.itltcanz.tms.entity.Comment;
 import org.itltcanz.tms.entity.Task;
 import org.itltcanz.tms.exceptions.EntityException;
 import org.itltcanz.tms.repository.TaskRepository;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.awt.print.Pageable;
 
 @Service
 @AllArgsConstructor
@@ -26,13 +27,13 @@ public class TaskService {
         return findById(task.getId());
     }
 
-    public List<Task> getTasksByAccount() {
+    public Page<Task> getTasks(Pageable pageable) {
         var account = accountService.getCurrentUser();
-        List<Task> tasks;
+        Page<Task> tasks;
         if (accountService.isAdmin(account)) {
-            tasks = taskRepository.findAll();
+            tasks = taskRepository.findAll(pageable);
         } else {
-            tasks = taskRepository.findTasksByExecutor(account);
+            tasks = taskRepository.findTasksByExecutor(account, pageable);
         }
         return tasks;
     }

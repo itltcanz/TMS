@@ -4,11 +4,14 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.itltcanz.tms.entity.Task;
 import org.itltcanz.tms.service.TaskService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.awt.print.Pageable;
 import java.util.Map;
 
 @RestController
@@ -19,8 +22,14 @@ public class TaskController {
     private final TaskService taskService;
 
     @GetMapping
-    public ResponseEntity<List<Task>> getTasks() {
-        var tasks = taskService.getTasksByAccount();
+    public ResponseEntity<Page<Task>> getTasks(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "createdDate") String sortBy,
+        @RequestParam(defaultValue = "desc") String direction) {
+        Sort sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
+        Pageable pageable = (Pageable) PageRequest.of(page, size, sort);
+        Page<Task> tasks = taskService.getTasks(pageable);
         return ResponseEntity.ok(tasks);
     }
 
