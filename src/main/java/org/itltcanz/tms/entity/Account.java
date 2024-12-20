@@ -19,12 +19,12 @@ public class Account implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @ManyToOne
-    private Role role;
     @NotBlank
     private String email;
     @NotBlank
     private String password;
+    @ManyToOne
+    private Role role;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

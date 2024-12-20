@@ -26,7 +26,7 @@ public class JwtService {
             .add(claims)
             .subject(email)
             .issuedAt(new Date(System.currentTimeMillis()))
-            .expiration(new Date(System.currentTimeMillis() * 60 * 60 * 30)) // 30 минут
+            .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // сутки
             .and()
             .signWith(getKey())
             .compact();

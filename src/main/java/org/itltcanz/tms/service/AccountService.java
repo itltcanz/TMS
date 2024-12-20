@@ -1,9 +1,12 @@
 package org.itltcanz.tms.service;
 
 import lombok.RequiredArgsConstructor;
+import org.itltcanz.tms.dto.account.AccountInDto;
+import org.itltcanz.tms.dto.account.AccountOutDto;
 import org.itltcanz.tms.entity.Account;
 import org.itltcanz.tms.exceptions.EntityException;
 import org.itltcanz.tms.repository.AccountRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,20 +21,23 @@ public class AccountService {
     private final JwtService jwtService;
     private final PasswordEncoder encoder;
     private final AuthenticationManager authenticationManager;
+    private final ModelMapper modelMapper;
 
-    public Account register(Account account) {
-        if (accountRepository.existsByEmail(account.getEmail())) {
+    public AccountOutDto register(AccountInDto accountInDto) {
+        var accountEntity = modelMapper.map(accountInDto, Account.class);
+        if (accountRepository.existsByEmail(accountEntity.getEmail())) {
             throw new EntityException("This email is already in use");
         }
-        account.setPassword(encoder.encode(account.getPassword()));
-        account.setRole(roleService.findUserRole());
-        return accountRepository.save(account);
+        accountEntity.setPassword(encoder.encode(accountEntity.getPassword()));
+        accountEntity.setRole(roleService.findUserRole());
+        return modelMapper.map(accountRepository.save(accountEntity), AccountOutDto.class);
     }
 
-    public String verify(Account account) {
+    public String verify(AccountInDto accountInDto) {
+        var accountEntity = modelMapper.map(accountInDto, Account.class);
         authenticationManager
-            .authenticate(new UsernamePasswordAuthenticationToken(account.getEmail(), account.getPassword()));
-        return jwtService.generateToken(account.getEmail());
+            .authenticate(new UsernamePasswordAuthenticationToken(accountEntity.getEmail(), accountEntity.getPassword()));
+        return jwtService.generateToken(accountEntity.getEmail());
     }
 
     public Account getCurrentUser() {
@@ -46,7 +52,6 @@ public class AccountService {
     public Account findById(Integer accountId) {
         return accountRepository.findById(accountId).orElseThrow(() -> new EntityException("Account not found"));
     }
-
 
     public boolean isAdmin(Account account) {
         return account.getRole().equals(roleService.findAdminRole());

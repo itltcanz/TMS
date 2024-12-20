@@ -1,5 +1,6 @@
 package org.itltcanz.tms.filter;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -16,19 +17,24 @@ import java.io.IOException;
 public class JwtExceptionFilter extends OncePerRequestFilter {
 
     @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
-        throws ServletException, IOException {
+    protected void doFilterInternal(
+        @NonNull HttpServletRequest request,
+        @NonNull HttpServletResponse response,
+        @NonNull FilterChain filterChain)
+        throws ServletException, IOException, ExpiredJwtException {
         try {
             filterChain.doFilter(request, response);
         } catch (SignatureException ex) {
-            handleException(response);
+            handleException(response, "Wrong JWT token");
+        } catch (ExpiredJwtException ex) {
+            handleException(response, "JWT token has expired");
         }
     }
 
-    private void handleException(HttpServletResponse response) throws IOException {
+    private void handleException(HttpServletResponse response, String errorText) throws IOException {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType("application/json");
-        response.getWriter().write("{\"error\": \"" + "Wrong JWT token" + "\"}");
+        response.getWriter().write("{\"error\": \"" + errorText + "\"}");
     }
 }
 

@@ -1,16 +1,18 @@
 package org.itltcanz.tms.service;
 
 import lombok.AllArgsConstructor;
+import org.itltcanz.tms.dto.task.TaskInDto;
+import org.itltcanz.tms.dto.task.TaskOutDto;
 import org.itltcanz.tms.entity.Account;
 import org.itltcanz.tms.entity.Comment;
 import org.itltcanz.tms.entity.Task;
 import org.itltcanz.tms.exceptions.EntityException;
 import org.itltcanz.tms.repository.TaskRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
-
-import java.awt.print.Pageable;
 
 @Service
 @AllArgsConstructor
@@ -20,102 +22,103 @@ public class TaskService {
     private final StatusService statusService;
     private final PriorityService priorityService;
     private final AccountService accountService;
+    private final ModelMapper modelMapper;
 
-    public Task save(Task task) {
-        task.getComments().forEach(commentService::save);
-        taskRepository.save(task);
-        return findById(task.getId());
+    // Controllers methods
+    public TaskOutDto createTask(TaskInDto taskInDto) {
+        var taskEntity = modelMapper.map(taskInDto, Task.class);
+        taskEntity.getComments().forEach(commentService::save);
+        taskRepository.save(taskEntity);
+        return modelMapper.map(findById(taskEntity.getId()), TaskOutDto.class) ;
     }
 
-    public Page<Task> getTasks(Pageable pageable) {
+    public Page<TaskOutDto> getTasks(Pageable pageable) {
         var account = accountService.getCurrentUser();
-        Page<Task> tasks;
+        Page<Task> taskEntities;
         if (accountService.isAdmin(account)) {
-            tasks = taskRepository.findAll(pageable);
+            taskEntities = taskRepository.findAll(pageable);
         } else {
-            tasks = taskRepository.findTasksByExecutor(account, pageable);
+            taskEntities = taskRepository.findTasksByExecutor(account, pageable);
         }
-        return tasks;
+        return taskEntities.map(taskEntity -> modelMapper.map(taskEntity, TaskOutDto.class));
     }
 
-    public Task getTaskById(Integer id) {
+    public TaskOutDto getTaskById(Integer id) {
         var account = accountService.getCurrentUser();
+        Task taskEntity;
         if (accountService.isAdmin(account)) {
-            return findById(id);
+            taskEntity = findById(id);
         } else {
-            return findTaskByIdAndAccount(id, account);
+            taskEntity = findTaskByIdAndAccount(id, account);
         }
+        return modelMapper.map(taskEntity, TaskOutDto.class);
     }
 
-    public Task findById(Integer id) {
-        return taskRepository.findById(id).orElseThrow(() -> new EntityException("Task not found"));
-    }
-
-    public Task update(Integer id, Task updatedTask) {
-        var task = findById(id);
-        updatedTask.getComments().forEach(commentService::save);
-        updatedTask.setId(id);
-        save(updatedTask);
-        task.getComments().forEach(commentService::delete);
-        return findById(id);
+    public TaskOutDto update(Integer id, TaskInDto taskInDto) {
+        var oldTaskEntity = findById(id);
+        var newTaskEntity = modelMapper.map(taskInDto, Task.class);
+        newTaskEntity.getComments().forEach(commentService::save);
+        newTaskEntity.setId(id);
+        save(newTaskEntity);
+        oldTaskEntity.getComments().forEach(commentService::delete);
+        return modelMapper.map(findById(newTaskEntity.getId()), TaskOutDto.class) ;
     }
 
     public void delete(Integer id) {
-        var task = findById(id);
-        taskRepository.delete(task);
-        task.getComments().forEach(commentService::delete);
+        var taskEntity = findById(id);
+        taskRepository.delete(taskEntity);
+        taskEntity.getComments().forEach(commentService::delete);
     }
 
-    public Task updateExecutor(Integer taskId, Integer executorId) {
-        var task = findById(taskId);
+    public TaskOutDto updateExecutor(Integer taskId, Integer executorId) {
+        var taskEntity = findById(taskId);
         var executor = accountService.findById(executorId);
-        task.setExecutor(executor);
-        return save(task);
+        taskEntity.setExecutor(executor);
+        return modelMapper.map(save(taskEntity), TaskOutDto.class);
     }
 
-    public Task updateStatus(Integer taskId, Integer statusId) {
+    public TaskOutDto updateStatus(Integer taskId, Integer statusId) {
         var account = accountService.getCurrentUser();
-        var task = findById(taskId);
-        if (accountService.isAdmin(account) || task.getExecutor().equals(account)) {
+        var taskEntity = findById(taskId);
+        if (accountService.isAdmin(account) || taskEntity.getExecutor().equals(account)) {
             var status = statusService.findById(statusId);
-            task.setStatus(status);
-            return save(task);
+            taskEntity.setStatus(status);
+            return modelMapper.map(save(taskEntity), TaskOutDto.class);
         } else {
             throw new AccessDeniedException("You do not have permission to access this task");
         }
     }
 
-    public Task updatePriority(Integer taskId, Integer priorityId) {
+    public TaskOutDto updatePriority(Integer taskId, Integer priorityId) {
         var account = accountService.getCurrentUser();
-        var task = findById(taskId);
-        if (accountService.isAdmin(account) || task.getExecutor().equals(account)) {
+        var taskEntity = findById(taskId);
+        if (accountService.isAdmin(account) || taskEntity.getExecutor().equals(account)) {
             var priority = priorityService.findById(priorityId);
-            task.setPriority(priority);
-            return save(task);
+            taskEntity.setPriority(priority);
+            return modelMapper.map(save(taskEntity), TaskOutDto.class);
         } else {
             throw new AccessDeniedException("You do not have permission to access this task");
         }
     }
 
-    public Task addComment(Integer taskId, String text) {
+    public TaskOutDto addComment(Integer taskId, String text) {
         var account = accountService.getCurrentUser();
-        var task = findById(taskId);
-        if (accountService.isAdmin(account) || task.getExecutor().equals(account)) {
+        var taskEntity = findById(taskId);
+        if (accountService.isAdmin(account) || taskEntity.getExecutor().equals(account)) {
             var comment = new Comment(account, text);
             commentService.save(comment);
-            task.getComments().add(comment);
-            return save(task);
+            taskEntity.getComments().add(comment);
+            return modelMapper.map(save(taskEntity), TaskOutDto.class);
         } else {
             throw new AccessDeniedException("You do not have permission to access this task");
         }
     }
 
-    public Task findTaskByIdAndAccount(Integer id, Account account) {
-        var task = taskRepository.findById(id).orElseThrow(() -> new EntityException("Task not found"));
-        if (!task.getExecutor().equals(account)) {
-            throw new AccessDeniedException("You do not have permission to access this task");
-        }
-        return task;
+    public TaskOutDto updateComment(Integer taskId, Integer commentId, String text) {
+        var commentEntity = commentService.findById(commentId);
+        commentEntity.setText(text);
+        commentService.save(commentEntity);
+        return modelMapper.map(findById(taskId), TaskOutDto.class);
     }
 
     public void deleteComment(Integer taskId, Integer commentId) {
@@ -124,5 +127,25 @@ public class TaskService {
         task.getComments().remove(comment);
         save(task);
         commentService.delete(comment);
+    }
+
+    // Internal methods
+
+    public Task findById(Integer id) {
+        return taskRepository.findById(id).orElseThrow(() -> new EntityException("Task not found"));
+    }
+
+    public Task save(Task task) {
+        task.getComments().forEach(commentService::save);
+        taskRepository.save(task);
+        return findById(task.getId());
+    }
+
+    public Task findTaskByIdAndAccount(Integer id, Account account) {
+        var task = taskRepository.findById(id).orElseThrow(() -> new EntityException("Task not found"));
+        if (!task.getExecutor().equals(account)) {
+            throw new AccessDeniedException("You do not have permission to access this task");
+        }
+        return task;
     }
 }

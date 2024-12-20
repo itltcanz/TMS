@@ -29,6 +29,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security:3.4.0")
     implementation("org.springframework.boot:spring-boot-starter-web:3.4.0")
 
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.11.3")
     testImplementation("org.springframework.boot:spring-boot-starter-test:3.4.0")
     testImplementation("org.springframework.security:spring-security-test:6.4.1")
 
@@ -41,7 +42,12 @@ dependencies {
 
     implementation("org.postgresql:postgresql:42.7.4")
 
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.11.3")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
+
+    implementation("org.modelmapper:modelmapper:3.2.2")
+
+    implementation("org.springframework.boot:spring-boot-starter-hateoas:3.4.0")
+
 }
 
 tasks.withType<Test> {
