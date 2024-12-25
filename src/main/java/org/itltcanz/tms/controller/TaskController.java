@@ -2,6 +2,7 @@ package org.itltcanz.tms.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import org.itltcanz.tms.dto.task.TaskInDto;
 import org.itltcanz.tms.dto.task.TaskOutDto;
@@ -20,6 +21,7 @@ import java.util.Map;
 @RequestMapping("/api/tasks")
 @AllArgsConstructor
 public class TaskController {
+
     private final TaskService taskService;
 
     @PostMapping
@@ -45,7 +47,7 @@ public class TaskController {
 
     @GetMapping("/{taskId}")
     @Operation(summary = "Get task by ID", description = "This endpoint allows you to get the task details by ID.")
-    public ResponseEntity<TaskOutDto> getTaskById(@PathVariable Integer taskId) {
+    public ResponseEntity<TaskOutDto> getTaskById(@PathVariable @NotNull Integer taskId) {
         var taskOutDto = taskService.getTaskById(taskId);
         return ResponseEntity.ok(taskOutDto);
     }
@@ -53,7 +55,7 @@ public class TaskController {
     @PutMapping("/{id}")
     @Secured("ROLE_ADMIN")
     @Operation(summary = "Update an existing task", description = "This endpoint allows you to update an existing task.")
-    public ResponseEntity<TaskOutDto> updateTask(@PathVariable Integer id, @RequestBody @Valid TaskInDto taskInDto) {
+    public ResponseEntity<TaskOutDto> updateTask(@PathVariable @NotNull Integer id, @RequestBody @Valid TaskInDto taskInDto) {
         var taskOurDto = taskService.update(id, taskInDto);
         return ResponseEntity.ok(taskOurDto);
     }
@@ -61,21 +63,27 @@ public class TaskController {
     @PatchMapping("/{taskId}/executor")
     @Secured("ROLE_ADMIN")
     @Operation(summary = "Update the executor of a task", description = "This endpoint allows you to update the executor of a task.")
-    public ResponseEntity<TaskOutDto> updateTaskExecutor(@PathVariable Integer taskId, @RequestBody Map<String, Integer> newExecutorId) {
+    public ResponseEntity<TaskOutDto> updateTaskExecutor(
+        @PathVariable @NotNull Integer taskId,
+        @RequestBody Map<String, Integer> newExecutorId) {
         var task = taskService.updateExecutor(taskId, newExecutorId.get("executor"));
         return ResponseEntity.ok(task);
     }
 
     @PatchMapping("/{taskId}/status")
     @Operation(summary = "Update the status of a task", description = "This endpoint allows you to update the status of a task.")
-    public ResponseEntity<TaskOutDto> updateTaskStatus(@PathVariable Integer taskId, @RequestBody Map<String, Integer> newStatusId) {
+    public ResponseEntity<TaskOutDto> updateTaskStatus(
+        @PathVariable @NotNull Integer taskId,
+        @RequestBody @NotNull Map<String, Integer> newStatusId) {
         var task = taskService.updateStatus(taskId, newStatusId.get("status"));
         return ResponseEntity.ok(task);
     }
 
     @PatchMapping("/{taskId}/priority")
     @Operation(summary = "Update the priority of a task", description = "This endpoint allows you to update the priority of a task.")
-    public ResponseEntity<TaskOutDto> updateTaskPriority(@PathVariable Integer taskId, @RequestBody Map<String, Integer> newPriorityId) {
+    public ResponseEntity<TaskOutDto> updateTaskPriority(
+        @PathVariable @NotNull Integer taskId,
+        @RequestBody @NotNull Map<String, Integer> newPriorityId) {
         var task = taskService.updatePriority(taskId, newPriorityId.get("priority"));
         return ResponseEntity.ok(task);
     }
@@ -83,7 +91,7 @@ public class TaskController {
     @DeleteMapping("/{id}")
     @Secured("ROLE_ADMIN")
     @Operation(summary = "Delete a task", description = "This endpoint allows you to delete a task by ID.")
-    public ResponseEntity<Void> deleteTask(@PathVariable Integer id) {
+    public ResponseEntity<Void> deleteTask(@PathVariable @NotNull Integer id) {
         taskService.delete(id);
         return ResponseEntity.noContent().build();
     }

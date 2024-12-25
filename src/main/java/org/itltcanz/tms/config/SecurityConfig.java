@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -36,10 +35,10 @@ public class SecurityConfig {
         httpSecurity
             .csrf(AbstractHttpConfigurer::disable) // Отключение CSRF
             .authorizeHttpRequests(request -> request
-                .requestMatchers("/api/auth/register", "/api/auth/login").permitAll() // Разрешить доступ для всех
+                .requestMatchers("/api/auth/register", "/api/auth/login",
+                    "/swagger-ui/**", "/v3/api-docs/**").permitAll() // Разрешить доступ для всех
                 .anyRequest().authenticated() // Остальные запросы требуют аутентификации
             )
-            .httpBasic(Customizer.withDefaults()) // Включение базовой HTTP-аутентификации
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless сессии
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // Добавление JWT фильтра
             .addFilterBefore(jwtExceptionFilter, JwtFilter.class); // Добавление фильтра обработки исключений
