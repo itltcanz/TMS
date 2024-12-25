@@ -11,8 +11,12 @@ import org.itltcanz.tms.repository.TaskRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @AllArgsConstructor
@@ -32,16 +36,33 @@ public class TaskService {
         return modelMapper.map(findById(taskEntity.getId()), TaskOutDto.class) ;
     }
 
-    public Page<TaskOutDto> getTasks(Pageable pageable) {
+    public Page<TaskOutDto> getTasks(Pageable pageable, HashMap<String, String> filters) {
+        // Используем Specification для динамического фильтра
+        Specification<Task> spec = Specification.where(null);
+
+        // Создаем новое значение спецификации на каждом шаге
+        for (Map.Entry<String, String> entry : filters.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            if (key.equals("title")) {
+                spec = spec.and((root, query, cb) -> cb.like(root.get(key), "%" + value + "%"));
+            } else {
+                spec = spec.and((root, query, cb) -> cb.equal(root.get(key).get("id"), value));
+            }
+        }
+
         var account = accountService.getCurrentUser();
         Page<Task> taskEntities;
+
         if (accountService.isAdmin(account)) {
-            taskEntities = taskRepository.findAll(pageable);
+            taskEntities = taskRepository.findAll(spec, pageable);
         } else {
-            taskEntities = taskRepository.findTasksByExecutor(account, pageable);
+            taskEntities = taskRepository.findTasksByExecutor(account, spec, pageable);
         }
+
         return taskEntities.map(taskEntity -> modelMapper.map(taskEntity, TaskOutDto.class));
     }
+
 
     public TaskOutDto getTaskById(Integer id) {
         var account = accountService.getCurrentUser();

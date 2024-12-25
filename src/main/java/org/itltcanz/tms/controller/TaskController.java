@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -33,15 +34,29 @@ public class TaskController {
     }
 
     @GetMapping
-    @Operation(summary = "Get list of tasks", description = "This endpoint returns a paginated list of tasks.")
+    @Operation(summary = "Get list of tasks", description = "This endpoint returns a paginated list of tasks with optional filters.")
     public ResponseEntity<Page<TaskOutDto>> getTasks(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(defaultValue = "creationDate") String sortBy,
-        @RequestParam(defaultValue = "desc") String direction) {
+        @RequestParam(defaultValue = "desc") String direction,
+        @RequestParam(required = false) String title,
+        @RequestParam(required = false) String priorityId,
+        @RequestParam(required = false) String statusId,
+        @RequestParam(required = false) String executorId) {
+
+        // Создаём объект для пагинации и сортировки
         Sort sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<TaskOutDto> taskOutDtos = taskService.getTasks(pageable);
+
+        var filterMap = new HashMap<String, String>();
+        if (title != null) filterMap.put("title", title);
+        if (priorityId != null) filterMap.put("priority", priorityId);
+        if (statusId != null) filterMap.put("status", statusId);
+        if (executorId != null) filterMap.put("executor", executorId);
+
+        Page<TaskOutDto> taskOutDtos = taskService.getTasks(pageable, filterMap);
+
         return ResponseEntity.ok(taskOutDtos);
     }
 
