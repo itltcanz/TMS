@@ -1,7 +1,7 @@
 package org.itltcanz.tms.service;
 
 import lombok.RequiredArgsConstructor;
-import org.itltcanz.tms.dto.account.AccountInDto;
+import org.itltcanz.tms.dto.account.AccountAuthDto;
 import org.itltcanz.tms.dto.account.AccountOutDto;
 import org.itltcanz.tms.entity.Account;
 import org.itltcanz.tms.exceptions.EntityException;
@@ -23,8 +23,8 @@ public class AccountService {
     private final AuthenticationManager authenticationManager;
     private final ModelMapper modelMapper;
 
-    public AccountOutDto register(AccountInDto accountInDto) {
-        var accountEntity = modelMapper.map(accountInDto, Account.class);
+    public AccountOutDto register(AccountAuthDto accountAuthDto) {
+        var accountEntity = modelMapper.map(accountAuthDto, Account.class);
         if (accountRepository.existsByEmail(accountEntity.getEmail())) {
             throw new EntityException("This email is already in use");
         }
@@ -33,8 +33,8 @@ public class AccountService {
         return modelMapper.map(accountRepository.save(accountEntity), AccountOutDto.class);
     }
 
-    public String verify(AccountInDto accountInDto) {
-        var accountEntity = modelMapper.map(accountInDto, Account.class);
+    public String verify(AccountAuthDto accountAuthDto) {
+        var accountEntity = modelMapper.map(accountAuthDto, Account.class);
         authenticationManager
             .authenticate(new UsernamePasswordAuthenticationToken(accountEntity.getEmail(), accountEntity.getPassword()));
         return jwtService.generateToken(accountEntity.getEmail());

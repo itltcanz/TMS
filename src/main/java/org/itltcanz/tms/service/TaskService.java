@@ -9,6 +9,8 @@ import org.itltcanz.tms.entity.Task;
 import org.itltcanz.tms.exceptions.EntityException;
 import org.itltcanz.tms.repository.TaskRepository;
 import org.modelmapper.ModelMapper;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -31,9 +33,24 @@ public class TaskService {
     // Controllers methods
     public TaskOutDto createTask(TaskInDto taskInDto) {
         var taskEntity = modelMapper.map(taskInDto, Task.class);
-        taskEntity.getComments().forEach(commentService::save);
+        taskEntity.setAuthor(accountService.getCurrentUser());
+        if (taskEntity.getComments() != null) {
+            taskEntity.getComments().forEach(commentService::save);
+        }
         taskRepository.save(taskEntity);
         return modelMapper.map(findById(taskEntity.getId()), TaskOutDto.class) ;
+    }
+
+    @Cacheable(value = "tasks", key = "#taskId", unless = "#result == null")
+    public TaskOutDto getTaskById(Integer taskId) {
+        var account = accountService.getCurrentUser();
+        Task taskEntity;
+        if (accountService.isAdmin(account)) {
+            taskEntity = findById(taskId);
+        } else {
+            taskEntity = findTaskByIdAndAccount(taskId, account);
+        }
+        return modelMapper.map(taskEntity, TaskOutDto.class);
     }
 
     public Page<TaskOutDto> getTasks(Pageable pageable, HashMap<String, String> filters) {
@@ -63,34 +80,25 @@ public class TaskService {
         return taskEntities.map(taskEntity -> modelMapper.map(taskEntity, TaskOutDto.class));
     }
 
-
-    public TaskOutDto getTaskById(Integer id) {
-        var account = accountService.getCurrentUser();
-        Task taskEntity;
-        if (accountService.isAdmin(account)) {
-            taskEntity = findById(id);
-        } else {
-            taskEntity = findTaskByIdAndAccount(id, account);
-        }
-        return modelMapper.map(taskEntity, TaskOutDto.class);
-    }
-
-    public TaskOutDto update(Integer id, TaskInDto taskInDto) {
-        var oldTaskEntity = findById(id);
+    @CacheEvict(value = "tasks", key = "#taskId")
+    public TaskOutDto update(Integer taskId, TaskInDto taskInDto) {
+        var oldTaskEntity = findById(taskId);
         var newTaskEntity = modelMapper.map(taskInDto, Task.class);
         newTaskEntity.getComments().forEach(commentService::save);
-        newTaskEntity.setId(id);
+        newTaskEntity.setId(taskId);
         save(newTaskEntity);
         oldTaskEntity.getComments().forEach(commentService::delete);
         return modelMapper.map(findById(newTaskEntity.getId()), TaskOutDto.class) ;
     }
 
-    public void delete(Integer id) {
-        var taskEntity = findById(id);
+    @CacheEvict(value = "tasks", key = "#taskId")
+    public void delete(Integer taskId) {
+        var taskEntity = findById(taskId);
         taskRepository.delete(taskEntity);
         taskEntity.getComments().forEach(commentService::delete);
     }
 
+    @CacheEvict(value = "tasks", key = "#taskId")
     public TaskOutDto updateExecutor(Integer taskId, Integer executorId) {
         var taskEntity = findById(taskId);
         var executor = accountService.findById(executorId);
@@ -98,6 +106,7 @@ public class TaskService {
         return modelMapper.map(save(taskEntity), TaskOutDto.class);
     }
 
+    @CacheEvict(value = "tasks", key = "#taskId")
     public TaskOutDto updateStatus(Integer taskId, Integer statusId) {
         var account = accountService.getCurrentUser();
         var taskEntity = findById(taskId);
@@ -110,6 +119,7 @@ public class TaskService {
         }
     }
 
+    @CacheEvict(value = "tasks", key = "#taskId")
     public TaskOutDto updatePriority(Integer taskId, Integer priorityId) {
         var account = accountService.getCurrentUser();
         var taskEntity = findById(taskId);
@@ -122,6 +132,7 @@ public class TaskService {
         }
     }
 
+    @CacheEvict(value = "tasks", key = "#taskId")
     public TaskOutDto addComment(Integer taskId, String text) {
         var account = accountService.getCurrentUser();
         var taskEntity = findById(taskId);
@@ -135,6 +146,7 @@ public class TaskService {
         }
     }
 
+    @CacheEvict(value = "tasks", key = "#taskId")
     public TaskOutDto updateComment(Integer taskId, Integer commentId, String text) {
         var commentEntity = commentService.findById(commentId);
         commentEntity.setText(text);
@@ -142,6 +154,7 @@ public class TaskService {
         return modelMapper.map(findById(taskId), TaskOutDto.class);
     }
 
+    @CacheEvict(value = "tasks", key = "#taskId")
     public void deleteComment(Integer taskId, Integer commentId) {
         var task = findById(taskId);
         var comment = commentService.findById(commentId);

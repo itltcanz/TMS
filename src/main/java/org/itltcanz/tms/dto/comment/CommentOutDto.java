@@ -6,9 +6,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.itltcanz.tms.dto.account.AccountOutDto;
 
+import java.io.Serializable;
+
 @Data
 @NoArgsConstructor
-public class CommentOutDto {
+public class CommentOutDto implements Serializable {
     private Integer id;
     private AccountOutDto author;
     @NotBlank

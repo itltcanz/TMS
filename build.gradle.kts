@@ -1,6 +1,6 @@
 plugins {
     java
-    id("org.springframework.boot") version "3.4.0"
+    id("org.springframework.boot") version "3.4.1"
     id("io.spring.dependency-management") version "1.1.6"
 }
 
@@ -24,14 +24,20 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa:3.4.0")
-    implementation("org.springframework.boot:spring-boot-starter-validation:3.4.0")
-    implementation("org.springframework.boot:spring-boot-starter-security:3.4.0")
-    implementation("org.springframework.boot:spring-boot-starter-web:3.4.0")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa:3.4.1")
+    implementation("org.springframework.boot:spring-boot-starter-validation:3.4.1")
+    implementation("org.springframework.boot:spring-boot-starter-security:3.4.1")
+    implementation("org.springframework.boot:spring-boot-starter-web:3.4.1")
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test:3.4.1")
+    testImplementation("org.springframework.security:spring-security-test:6.4.1")
+
+    implementation("org.springframework.boot:spring-boot-starter-cache:3.4.1")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis:3.4.1")
+
+    implementation("org.springframework.boot:spring-boot-starter-hateoas:3.4.1")
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.11.3")
-    testImplementation("org.springframework.boot:spring-boot-starter-test:3.4.0")
-    testImplementation("org.springframework.security:spring-security-test:6.4.1")
 
     implementation("io.jsonwebtoken:jjwt-api:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
@@ -45,8 +51,6 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
 
     implementation("org.modelmapper:modelmapper:3.2.2")
-
-    implementation("org.springframework.boot:spring-boot-starter-hateoas:3.4.0")
 
 }
 

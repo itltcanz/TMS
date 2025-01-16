@@ -33,6 +33,13 @@ public class TaskController {
         return ResponseEntity.ok(taskOutDto);
     }
 
+    @GetMapping("/{taskId}")
+    @Operation(summary = "Get task by ID", description = "This endpoint allows you to get the task details by ID.")
+    public ResponseEntity<TaskOutDto> getTaskById(@PathVariable @NotNull Integer taskId) {
+        var taskOutDto = taskService.getTaskById(taskId);
+        return ResponseEntity.ok(taskOutDto);
+    }
+
     @GetMapping
     @Operation(summary = "Get list of tasks", description = "This endpoint returns a paginated list of tasks with optional filters.")
     public ResponseEntity<Page<TaskOutDto>> getTasks(
@@ -58,13 +65,6 @@ public class TaskController {
         Page<TaskOutDto> taskOutDtos = taskService.getTasks(pageable, filterMap);
 
         return ResponseEntity.ok(taskOutDtos);
-    }
-
-    @GetMapping("/{taskId}")
-    @Operation(summary = "Get task by ID", description = "This endpoint allows you to get the task details by ID.")
-    public ResponseEntity<TaskOutDto> getTaskById(@PathVariable @NotNull Integer taskId) {
-        var taskOutDto = taskService.getTaskById(taskId);
-        return ResponseEntity.ok(taskOutDto);
     }
 
     @PutMapping("/{id}")

@@ -9,12 +9,13 @@ import org.itltcanz.tms.dto.comment.CommentOutDto;
 import org.itltcanz.tms.entity.Priority;
 import org.itltcanz.tms.entity.Status;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
 @NoArgsConstructor
-public class TaskOutDto {
+public class TaskOutDto implements Serializable {
     private Integer id;
     @NotBlank(message = "Title cannot be empty")
     @Size(min = 1, max = 255, message = "Title must be between 1 and 255 characters")
