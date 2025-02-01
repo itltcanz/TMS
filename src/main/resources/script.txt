@@ -1,4 +1,4 @@
-docker cp /mnt/samsung-hdd/perevertailo/job/test-task/TMS/src/main/resources/fill_db.sql tms_postgres:/tmp/fill_db.sql
+docker cp ./src/main/resources/fill_db.sql tms_postgres:/tmp/fill_db.sql
 
 docker exec -it tms_postgres bash
 
