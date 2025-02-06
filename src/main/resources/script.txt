@@ -1,5 +1,0 @@
-docker cp ./src/main/resources/fill_db.sql tms_postgres:/tmp/fill_db.sql
-
-docker exec -it tms_postgres bash
-
-psql -U postgres -d tms -f /tmp/fill_db.sql

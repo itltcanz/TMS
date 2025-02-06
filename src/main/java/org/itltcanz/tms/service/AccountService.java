@@ -1,6 +1,7 @@
 package org.itltcanz.tms.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.itltcanz.tms.dto.account.AccountAuthDto;
 import org.itltcanz.tms.dto.account.AccountOutDto;
 import org.itltcanz.tms.entity.Account;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AccountService {
     private final AccountRepository accountRepository;
     private final RoleService roleService;
@@ -23,7 +25,10 @@ public class AccountService {
     private final AuthenticationManager authenticationManager;
     private final ModelMapper modelMapper;
 
+    // Controllers methods
+
     public AccountOutDto register(AccountAuthDto accountAuthDto) {
+        log.info("Registering account {}", accountAuthDto);
         var accountEntity = modelMapper.map(accountAuthDto, Account.class);
         if (accountRepository.existsByEmail(accountEntity.getEmail())) {
             throw new EntityException("This email is already in use");
@@ -34,11 +39,14 @@ public class AccountService {
     }
 
     public String verify(AccountAuthDto accountAuthDto) {
+        log.info("Verifying account {}", accountAuthDto);
         var accountEntity = modelMapper.map(accountAuthDto, Account.class);
         authenticationManager
             .authenticate(new UsernamePasswordAuthenticationToken(accountEntity.getEmail(), accountEntity.getPassword()));
         return jwtService.generateToken(accountEntity.getEmail());
     }
+
+    // Internal methods
 
     public Account getCurrentUser() {
         var email = SecurityContextHolder.getContext().getAuthentication().getName();

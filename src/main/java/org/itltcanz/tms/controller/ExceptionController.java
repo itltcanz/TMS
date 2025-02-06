@@ -2,6 +2,7 @@ package org.itltcanz.tms.controller;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
@@ -13,22 +14,27 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @ControllerAdvice
+@Slf4j
 public class ExceptionController {
     @ExceptionHandler(EntityException.class)
     public ResponseEntity<String> handleEntityException(EntityException ex) {
+        log.error(ex.getMessage());
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleGenericException(Exception ex) {
+        log.error(ex.getMessage());
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<String> handleAuthenticationException(AuthenticationException ex) {
+        log.error(ex.getMessage());
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<String> handleAccessDeniedException(AccessDeniedException ex) {
+        log.error(ex.getMessage());
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.FORBIDDEN);
     }
 
@@ -39,6 +45,7 @@ public class ExceptionController {
             .map(DefaultMessageSourceResolvable::getDefaultMessage)
             .findFirst()
             .orElse("Validation error");
+        log.error(errorMessage);
         return ResponseEntity.badRequest().body(errorMessage);
     }
 
@@ -48,6 +55,7 @@ public class ExceptionController {
             .map(ConstraintViolation::getMessage)
             .findFirst()
             .orElse("Invalid input");
+        log.error(errorMessage);
         return ResponseEntity.badRequest().body(errorMessage);
     }
 }

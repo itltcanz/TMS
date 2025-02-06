@@ -1,6 +1,7 @@
 package org.itltcanz.tms.service;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.itltcanz.tms.dto.task.TaskInDto;
 import org.itltcanz.tms.dto.task.TaskOutDto;
 import org.itltcanz.tms.entity.Account;
@@ -22,6 +23,7 @@ import java.util.Map;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class TaskService {
     private final TaskRepository taskRepository;
     private final CommentService commentService;
@@ -32,6 +34,7 @@ public class TaskService {
 
     // Controllers methods
     public TaskOutDto createTask(TaskInDto taskInDto) {
+        log.info("Creating task {}", taskInDto);
         var taskEntity = modelMapper.map(taskInDto, Task.class);
         taskEntity.setAuthor(accountService.getCurrentUser());
         if (taskEntity.getComments() != null) {
@@ -43,6 +46,7 @@ public class TaskService {
 
     @Cacheable(value = "tasks", key = "#taskId", unless = "#result == null")
     public TaskOutDto getTaskById(Integer taskId) {
+        log.info("Retrieving task {}", taskId);
         var account = accountService.getCurrentUser();
         Task taskEntity;
         if (accountService.isAdmin(account)) {
@@ -54,6 +58,7 @@ public class TaskService {
     }
 
     public Page<TaskOutDto> getTasks(Pageable pageable, HashMap<String, String> filters) {
+        log.info("Retrieving tasks {}", filters);
         // Используем Specification для динамического фильтра
         Specification<Task> spec = Specification.where(null);
 
@@ -82,6 +87,7 @@ public class TaskService {
 
     @CacheEvict(value = "tasks", key = "#taskId")
     public TaskOutDto update(Integer taskId, TaskInDto taskInDto) {
+        log.info("Updating task {}", taskId);
         var oldTaskEntity = findById(taskId);
         var newTaskEntity = modelMapper.map(taskInDto, Task.class);
         newTaskEntity.getComments().forEach(commentService::save);
@@ -93,6 +99,7 @@ public class TaskService {
 
     @CacheEvict(value = "tasks", key = "#taskId")
     public void delete(Integer taskId) {
+        log.info("Deleting task {}", taskId);
         var taskEntity = findById(taskId);
         taskRepository.delete(taskEntity);
         taskEntity.getComments().forEach(commentService::delete);
@@ -100,6 +107,7 @@ public class TaskService {
 
     @CacheEvict(value = "tasks", key = "#taskId")
     public TaskOutDto updateExecutor(Integer taskId, Integer executorId) {
+        log.info("Updating executor of task {}", taskId);
         var taskEntity = findById(taskId);
         var executor = accountService.findById(executorId);
         taskEntity.setExecutor(executor);
@@ -108,6 +116,7 @@ public class TaskService {
 
     @CacheEvict(value = "tasks", key = "#taskId")
     public TaskOutDto updateStatus(Integer taskId, Integer statusId) {
+        log.info("Updating status of task {}", taskId);
         var account = accountService.getCurrentUser();
         var taskEntity = findById(taskId);
         if (accountService.isAdmin(account) || taskEntity.getExecutor().equals(account)) {
@@ -121,6 +130,7 @@ public class TaskService {
 
     @CacheEvict(value = "tasks", key = "#taskId")
     public TaskOutDto updatePriority(Integer taskId, Integer priorityId) {
+        log.info("Updating priority of task {}", taskId);
         var account = accountService.getCurrentUser();
         var taskEntity = findById(taskId);
         if (accountService.isAdmin(account) || taskEntity.getExecutor().equals(account)) {
@@ -134,6 +144,7 @@ public class TaskService {
 
     @CacheEvict(value = "tasks", key = "#taskId")
     public TaskOutDto addComment(Integer taskId, String text) {
+        log.info("Adding comment to task {}", taskId);
         var account = accountService.getCurrentUser();
         var taskEntity = findById(taskId);
         if (accountService.isAdmin(account) || taskEntity.getExecutor().equals(account)) {
@@ -148,6 +159,7 @@ public class TaskService {
 
     @CacheEvict(value = "tasks", key = "#taskId")
     public TaskOutDto updateComment(Integer taskId, Integer commentId, String text) {
+        log.info("Updating comment to task {}", taskId);
         var commentEntity = commentService.findById(commentId);
         commentEntity.setText(text);
         commentService.save(commentEntity);
@@ -156,6 +168,7 @@ public class TaskService {
 
     @CacheEvict(value = "tasks", key = "#taskId")
     public void deleteComment(Integer taskId, Integer commentId) {
+        log.info("Deleting comment to task {}", taskId);
         var task = findById(taskId);
         var comment = commentService.findById(commentId);
         task.getComments().remove(comment);

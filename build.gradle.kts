@@ -28,6 +28,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation:3.4.1")
     implementation("org.springframework.boot:spring-boot-starter-security:3.4.1")
     implementation("org.springframework.boot:spring-boot-starter-web:3.4.1")
+    implementation("org.springframework.boot:spring-boot-starter-logging")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test:3.4.1")
     testImplementation("org.springframework.security:spring-security-test:6.4.1")
