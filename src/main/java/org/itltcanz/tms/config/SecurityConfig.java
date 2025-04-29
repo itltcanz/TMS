@@ -3,7 +3,7 @@ package org.itltcanz.tms.config;
 import lombok.RequiredArgsConstructor;
 import org.itltcanz.tms.filter.JwtExceptionFilter;
 import org.itltcanz.tms.filter.JwtFilter;
-import org.itltcanz.tms.service.AccountDetailsService;
+import org.itltcanz.tms.service.AppUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,7 +26,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 @EnableMethodSecurity(securedEnabled = true)
 public class SecurityConfig {
-    private final AccountDetailsService accountDetailsService;
+    private final AppUserDetailsService appUserDetailsService;
     private final JwtFilter jwtFilter;
     private final JwtExceptionFilter jwtExceptionFilter;
 
@@ -54,7 +54,7 @@ public class SecurityConfig {
     public AuthenticationProvider authenticationProvider() {
         var provider = new DaoAuthenticationProvider();
         provider.setPasswordEncoder(passwordEncoder());
-        provider.setUserDetailsService(accountDetailsService);
+        provider.setUserDetailsService(appUserDetailsService);
         return provider;
     }
 

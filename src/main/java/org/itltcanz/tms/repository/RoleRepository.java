@@ -1,12 +1,12 @@
 package org.itltcanz.tms.repository;
 
-import org.itltcanz.tms.entity.Role;
+import org.itltcanz.tms.entity.RoleEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-public interface RoleRepository extends JpaRepository<Role, Integer> {
-    Optional<Role> findRoleByName(String roleName);
+public interface RoleRepository extends JpaRepository<RoleEntity, Integer> {
+    Optional<RoleEntity> findRoleByName(String roleName);
 }

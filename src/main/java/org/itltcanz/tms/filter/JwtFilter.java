@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.itltcanz.tms.service.AccountDetailsService;
+import org.itltcanz.tms.service.AppUserDetailsService;
 import org.itltcanz.tms.service.JwtService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,7 +21,7 @@ import java.io.IOException;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final AccountDetailsService accountDetailsService;
+    private final AppUserDetailsService appUserDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
@@ -34,9 +34,9 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            var account = accountDetailsService.loadUserByUsername(email);
-            if (jwtService.validateToken(token, account)) {
-                var authToken = new UsernamePasswordAuthenticationToken(account, null, account.getAuthorities());
+            var userDetails = appUserDetailsService.loadUserByUsername(email);
+            if (jwtService.validateToken(token, userDetails)) {
+                var authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }

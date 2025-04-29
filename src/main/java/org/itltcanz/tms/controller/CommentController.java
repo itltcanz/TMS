@@ -34,7 +34,7 @@ public class CommentController {
     public ResponseEntity<TaskOutDto> updateComment(
         @PathVariable @NotNull Integer taskId,
         @PathVariable @NotNull Integer commentId,
-        @RequestBody @NotBlank @Size(max = 255, message = "Comment must be between 1 and 255 characters") String text) {
+        @RequestBody @NotBlank @Size(max = 255, message = "CommentEntity must be between 1 and 255 characters") String text) {
         var taskOutDto = taskService.updateComment(taskId, commentId, text);
         return ResponseEntity.ok(taskOutDto);
     }

@@ -1,48 +1,48 @@
 # TMS
 
-Этот проект является api для работы с задачами, которое я делал как тестовое задание.
-Здесь применено большинство технологии, востребованных на ранке труда. Некоторые были для меня новыми, некоторые - нет.
+This project is an example of a corporate API for task management that I developed as a test assignment.
+It incorporates most of the technologies in demand in the job market.
 
-## Оглавление
+## Table of Contents
 
-- [Установка и запуск](#установка-и-запуск)
-- [Использование](#использование)
-- [Технологии](#технологии)
-- [Лицензия](#лицензия)
+- [Installation and Launch](#installation-and-launch)
+- [Usage](#usage)
+- [Technologies](#technologies)
+- [License](#license)
 
-## Установка и запуск
+## Installation and Launch
 
-### Требования
+### Prerequisites
 
-Перед началом работы убедитесь, что у вас установлены следующие инструменты:
+Before starting, ensure the following tools are installed:
 - [Docker](https://docs.docker.com/get-docker/)
 - [Docker Compose](https://docs.docker.com/compose/install/)
 - [JDK 17 или выше](https://adoptium.net/temurin/releases/)
 
-### Установка
+### Installation
 
-1. Клонируйте репозиторий:
+1. Clone the repository:
 
     ```bash
     git clone https://github.com/ваш-username/ваш-репозиторий.git
     cd TMS
     ```
    
-2. Запустите контейнеры:
+2. Start the containers:
 
     ```bash
     docker compose up -d
     ```
     
-3. Запустите проект, чтобы в БД создались таблицы
+3. Run the project to create database tables:
 
     ```bash
    ./gradlew build
 
-   java -jar build/libs/TMS-0.0.1-SNAPSHOT.jar
+   java -jar build/libs/tms-plain.jar
     ```
 
-4. Заполните БД базовой информацией:
+4. Populate the database with initial data:
 
    ```bash
     docker cp ./src/main/resources/fill_db.sql tms_postgres:/tmp/fill_db.sql
@@ -53,30 +53,30 @@
    
     exit
     ```
-   
-   На этом установка закончена.
 
-### Запуск
+   Installation is now complete.
 
-Запуск проекта осуществляется через собранный jar файл:
+### Launch
+
+Run the project using the built JAR file:
 
    ```bash
-   java -jar build/libs/TMS-0.0.1-SNAPSHOT.jar
+   java -jar build/libs/tms-plain.jar
    ```
 
-## Использование
+## Usage
 
 ### Swagger
 
-Полное описание Endpoint-ов api можно увидеть в swagger-ui по url:
+A full description of the API endpoints is available in Swagger UI at:
 
    ```url
    http://localhost:8080/swagger-ui/index.html
    ```
 
-Краткое описание Endpoint-ов api:
+Brief endpoint overview:
 
-### task-controller
+### taskEntity-controller
 
 1. PUT /api/tasks/{id}
 2. DELETE /api/tasks/{id}
@@ -87,21 +87,21 @@
 7. PATCH /api/tasks/{taskId}/executor
 8. GET /api/tasks/{taskId}
 
-### comment-controller
+### commentEntity-controller
 
 1. POST /api/tasks/{taskId}/comments
 2. DELETE /api/tasks/{taskId}/comments/{commentId}
 3. PATCH /api/tasks/{taskId}/comments/{commentId}
 
-### account-controller
+### userEntity-controller
 
 1. POST /api/auth/register
 2. POST /api/auth/login
 3. GET /api/auth/profile
 
-## Технологии
+## Technologies
 
-Используемые в проекте технологии:
+Technologies used in the project:
 - Java 17
 - Spring Boot
 - Spring Data
@@ -113,13 +113,12 @@
 - JWT
 - Swagger
 
-Планируется добавить:
-- Logback
+Planned additions:
 - Elastic search
 - Junit
 - Mockito 
 - Csrf
 
-## Лицензия
+## License
 
-Этот проект распространяется под лицензией MIT. Подробности смотрите в файле LICENSE.md.
+This project is licensed under the MIT License. Details can be found in the LICENSE.md file.

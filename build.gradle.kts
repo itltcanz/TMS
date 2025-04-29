@@ -5,7 +5,6 @@ plugins {
 }
 
 group = "org.itltcanz"
-version = "0.0.1-SNAPSHOT"
 
 java {
     toolchain {
@@ -57,4 +56,8 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+tasks.jar {
+    archiveBaseName.set("tms")
 }
